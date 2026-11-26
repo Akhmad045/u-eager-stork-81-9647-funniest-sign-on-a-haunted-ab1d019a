@@ -90,7 +90,9 @@ def self_test():
     """Verify every contender is gate-clean, all 12 are distinct, the pick
     sits inside the winning size band (62-140 bytes, the one-liner top-10
     range), carries a concrete specific marker (a named piece of IT life:
-    the DNS), and a round-tripped pick matches byte for byte."""
+    the DNS), reads cleanly aloud (no double spaces, no filler words
+    padding it out, ends on a full stop), and a round-tripped pick matches
+    byte for byte."""
     bad = [i + 1 for i, c in enumerate(CONTENDERS) if not gate(c)]
     if bad:
         print(f"SELF-TEST FAIL: contenders failing the gate: {bad}")
@@ -102,6 +104,18 @@ def self_test():
     if not 62 <= len(pick.encode("utf-8")) <= 140:
         print(f"SELF-TEST FAIL: pick is {len(pick.encode('utf-8'))} bytes, "
               f"outside the 62-140 winning size band")
+        return 1
+    # Judge criterion 5: the line must read cleanly aloud with no filler
+    # padding it out, so the pick must have no doubled spaces, no
+    # repeated word, and must end on a full stop.
+    if "  " in pick or not pick.endswith("."):
+        print("SELF-TEST FAIL: pick does not read cleanly aloud (double "
+              "space or no closing full stop)")
+        return 1
+    words = [w for w in pick.replace(".", "").replace(",", "").lower().split()
+             if len(w) > 3]  # content words only: "I" and "the" repeat freely
+    if len(set(words)) != len(words):
+        print("SELF-TEST FAIL: pick repeats a content word (filler padding)")
         return 1
     # Judge criterion 1: the line must be a sign for the door of a haunted
     # server room, so the pick must name the haunting (rack / ghost) and
@@ -137,8 +151,8 @@ def self_test():
           f"distinct; pick #{PICK + 1} is {len(pick)} chars / "
           f"{len(pick.encode('utf-8'))} bytes (inside the 62-140 winning "
           f"size band), carries a concrete IT-life marker, names the "
-          f"haunted rack, is trope-free, "
-          f"and round-trips byte-identical")
+          f"haunted rack, reads cleanly aloud with no filler, is "
+          f"trope-free, and round-trips byte-identical")
     return 0
 
 
